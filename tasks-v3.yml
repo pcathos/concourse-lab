@@ -1,20 +1,9 @@
-        task: task_1
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: busybox}
-          run:
-            path: echo
-            args: [This is task 01]
-        task: task_2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: busybox}
-          run:
-            path: echo
-            args: [This is task 02]
 
+platform: linux
 
+  image_resource:
+    type: docker-image
+    source: {repository: busybox}
+  run:
+    path: echo
+    args: [This is task 01]
