@@ -1,36 +1,54 @@
+resources:
+- name: git-resource
+  type: git
+  check_every: 1m
+  source:
+    uri: https://github.com/sunpc-cdc/concourse-lab.git
+    branch: main
+- name: my-timer
+  type: time
+  source:
+    interval: 5m
+
 jobs:
-  - name: job-01
-    public: true
-    plan:
-      - task: task_1
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: busybox}
-          run:
-            path: echo
-            args: [This is task 01]
-      - task: task_2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: busybox}
-          run:
-            path: echo
-            args: [This is task 02]
+- name: jobs-from-git
+  public: true
+  plan:
+  - get: git-resource
+  - task: git
+    file: git-resource/tasks-v3.yml
+  
+- name: job-after-1
+  public: true
+  plan:
+  - get: my-timer
+    passed: [job-with-git]
+    trigger: true
+  - task: simple-task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: busybox }
+      run:
+        path: top
 
-  - name: job-02
-    public: true
-    plan:
-      - task: hello-world
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: busybox}
-          run:
-            path: echo
-            args: [hello world]
 
+- name: job-with-git
+  public: true
+  plan:
+  - get: git-resource
+    trigger: true
+  - get: my-timer
+    trigger: true
+  - task: display-git-content
+    config:
+      inputs:
+      - name: git-resource
+      platform: linux
+      image_resource:
+          type: registry-image
+          source: { repository: busybox } 
+      run:
+        path: cat
+        args: ["./git-resource/tasks-v3.yml"]
